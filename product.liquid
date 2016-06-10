@@ -32,7 +32,7 @@ Place this in your product.liquid template, at the bottom.
     $(function() {
       thumbnails = $('img[src*="/products/"]').not(':first');
       if (thumbnails.size()) {
-        thumbnails.bind('click', function() {
+        thumbnails.bind('click touchstart', function() {
           var image = $(this).attr('src').split('?')[0].replace(/(_thumb\.)|(_small\.)|(_compact\.)|(_medium\.)|(_large\.)|(_grande\.)/,'.');
           if (typeof variantImages[image] !== 'undefined') {
             {% for option in product.options %}
