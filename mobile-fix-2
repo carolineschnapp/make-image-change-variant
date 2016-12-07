@@ -1,0 +1,47 @@
+{% if product.variants.size > 1 %}
+<script>
+(function($) { 
+  var variantImages = {},
+    thumbnails,
+    variant,
+    variantImage,
+    optionValue;
+    {% for variant in product.variants %}
+       variant = {{ variant | json }};
+       if ( typeof variant.featured_image !== 'undefined' && variant.featured_image !== null ) {
+         variantImage =  variant.featured_image.src.split('?')[0].replace(/http(s)?:/,'');
+         variantImages[variantImage] = variantImages[variantImage] || {};
+         {% for option in product.options %}
+           {% assign option_value = variant.options[forloop.index0] %}
+           {% assign option_key = 'option-' | append: forloop.index0 %}
+           if (typeof variantImages[variantImage][{{ option_key | json }}] === 'undefined') {
+             variantImages[variantImage][{{ option_key | json }}] = {{ option_value | json }};
+           }
+           else {
+             var oldValue = variantImages[variantImage][{{ option_key | json }}];
+             if ( oldValue !== null && oldValue !== {{ option_value | json }} )  {
+               variantImages[variantImage][{{ option_key | json }}] = null;
+             }
+           }
+         {% endfor %}
+       }
+    {% endfor %}
+    $(function() {
+      thumbnails = $('img[src*="/products/"]').not(':first');
+      if (thumbnails.size()) {
+         thumbnails.on('click touchstart', function() {
+          var image = $(this).attr('src').split('?')[0].replace(/(_thumb\.)|(_small\.)|(_compact\.)|(_medium\.)|(_large\.)|(_grande\.)/,'.');
+          if (typeof variantImages[image] !== 'undefined') {
+            {% for option in product.options %}
+            optionValue = variantImages[image]['option-{{ forloop.index0 }}'];
+            if (optionValue !== null && $('.single-option-selector:eq({{ forloop.index0 }}) option').filter(function() { return $(this).text() === optionValue }).length) {
+              $('.single-option-selector:eq({{ forloop.index0 }})').val(optionValue).trigger('change');
+            }
+            {% endfor %}
+          }
+        });
+      }
+    });
+})(jQuery);
+</script> 
+{% endif %}
